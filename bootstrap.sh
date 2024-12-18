@@ -89,11 +89,13 @@ npm install -g artillery
 export INGRESS_HOST=localhost
 export GATEWAY_URL=$INGRESS_HOST
 
+echo "Launch minikube tunnel"
 echo "Access your hello-minikube service at http://localhost/hello"
-echo "Access the Grafana dashboard at http://localhost/grafana"
+echo "Access your hello-minikube service at http://localhost/test"
+echo "Access the Grafana dashboard at http://localhost/grafana (FAILURE)"
 echo "Access the Kiali dashboard using 'kubectl port-forward service/kiali 20001:20001 -n istio-system'"
 echo "Access the minikube dashboard using 'minikube dashboard'"
 
 
 # Start minikube tunnel to expose services on localhost
-minikube tunnel 
+# minikube tunnel 
