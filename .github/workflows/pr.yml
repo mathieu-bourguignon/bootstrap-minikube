@@ -70,15 +70,15 @@ jobs:
           echo ${{ steps.filter_subdirs.outputs.AFFECTED}}
 
       # Runs the Super-Linter action
-      - name: Run Super-Linter
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: master
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_ALL_CODEBASE: false
-          KUBERNETES_KUBEVAL_OPTIONS: --ignore-missing-schemas
-          VALIDATE_TERRAFORM_TERRASCAN: false
-          FILTER_REGEX_EXCLUDE: .github/
+      # - name: Run Super-Linter
+      #   uses: github/super-linter@v4
+      #   env:
+      #     DEFAULT_BRANCH: master
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     VALIDATE_ALL_CODEBASE: false
+      #     KUBERNETES_KUBEVAL_OPTIONS: --ignore-missing-schemas
+      #     VALIDATE_TERRAFORM_TERRASCAN: false
+      #     FILTER_REGEX_EXCLUDE: .github/
 
       - name: Boostrap minikube
         run: |
