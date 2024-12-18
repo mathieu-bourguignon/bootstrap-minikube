@@ -40,28 +40,30 @@ Run the loadtest.sh script to perform a load test on the API using Artillery.
 ## Improvements to the Stack
 As a DevOps engineer, you are expected to improve the stack in the following ways:
 
-1. Monitoring:
+### Monitoring:
 
 - Integrate Prometheus and Grafana for monitoring.
 - Set up alerting for critical metrics.
-2. Helm Deployment:
+
+### Helm Deployment:
 
 - Create a Helm chart for deploying the application.
 - Add configuration options for easy customization and deployment.
 
-3. Autoscaling:
+### Autoscaling:
 
 - Fine-tune the Horizontal Pod Autoscaler based on application load.
-4. Logging:
+
+### Logging:
 
 - Integrate centralized logging using tools like ELK stack (Elasticsearch, Logstash, Kibana) or Loki.
 
-5. CI/CD:
+### CI/CD:
 
-- Set up a CI/CD pipeline using tools like Jenkins, GitHub Actions, or GitLab CI.
+- Set up a CI/CD pipeline using tools GitHub Actions.
 - Implement automated testing and deployment.
 
-6. Security:
+### Security:
 
 - Implement security best practices for Kubernetes (e.g., Network Policies, RBAC).
 - Set up vulnerability scanning for container images.

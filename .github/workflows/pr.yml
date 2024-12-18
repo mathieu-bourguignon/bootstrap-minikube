@@ -1,0 +1,91 @@
+name: Pull Request
+on:
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BEFORE_SHA: ${{ github.event.before }}
+
+jobs:
+  setup:
+    name: "Pull Request"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set default for previous commit
+        id: default_prev_commit
+        run: |
+          if [ $(git rev-list --count HEAD) -eq 1 ]; then
+            echo "PREVIOUS_COMMIT=4b825dc642cb6eb9a060e54bf8d69288fbee4904" >> $GITHUB_ENV
+          else
+            echo "PREVIOUS_COMMIT=$(git rev-parse HEAD^1)" >> $GITHUB_ENV
+          fi
+
+      - name: Debug information
+        run: |
+          echo "Git commit history:"
+          git log --oneline -5
+          echo "PREVIOUS_COMMIT: ${{ env.PREVIOUS_COMMIT }}"
+          echo "CURRENT_COMMIT: ${{ github.sha }}"
+
+      - name: Get affected paths
+        id: affected_paths
+        run: |
+          git diff --name-only ${{ env.PREVIOUS_COMMIT }} ${{ github.sha }} > affected_paths.txt
+          cat affected_paths.txt
+
+      - name: Filter affected subdirectories
+        id: filter_subdirs
+        run: |
+          grep '' affected_paths.txt | awk -F'/' '{
+              path = "";
+              for (i = 1; i <= NF-1; i++) {
+                  path = path "/" $i
+              }
+              print path
+          }' | sort | uniq > affected_subdirs.txt
+
+          # Lire les sous-répertoires et créer la sortie au format JSON
+          if [[ -s affected_subdirs.txt ]]; then  # Vérifier que le fichier n'est pas vide
+            affecteds=$(jq -R -s -c 'split("\n") | map(select(length > 0))' < affected_subdirs.txt)
+          else
+            affecteds="[]"
+          fi
+
+          # Définir la sortie dans GITHUB_OUTPUT
+          echo "AFFECTED=$affecteds" >> $GITHUB_OUTPUT
+
+      - name: Display affected subdirectories
+        run: |
+          echo "Les sous-répertoires affectés sont :"
+          echo ${{ steps.filter_subdirs.outputs.AFFECTED}}
+
+      # Runs the Super-Linter action
+      # - name: Run Super-Linter
+      #   uses: github/super-linter@v4
+      #   env:
+      #     DEFAULT_BRANCH: master
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     VALIDATE_ALL_CODEBASE: false
+      #     KUBERNETES_KUBEVAL_OPTIONS: --ignore-missing-schemas
+      #     VALIDATE_TERRAFORM_TERRASCAN: false
+      #     FILTER_REGEX_EXCLUDE: .github/
+
+      - name: Boostrap minikube
+        run: |
+          ./bootstrap.sh
+          sudo minikube tunnel &
+          sleep 10
+
+      - name: Run tests
+        run: |
+          ./loadtest.sh
