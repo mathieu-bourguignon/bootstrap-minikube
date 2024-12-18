@@ -83,7 +83,7 @@ jobs:
       - name: Boostrap minikube
         run: |
           ./bootstrap.sh
-          minikube tunnel &
+          sudo minikube tunnel &
           sleep 10
 
       - name: Run tests
