@@ -58,7 +58,7 @@ As a DevOps engineer, you are expected to improve the stack in the following way
 
 5. CI/CD:
 
--Set up a CI/CD pipeline using tools like Jenkins, GitHub Actions, or GitLab CI.
+- Set up a CI/CD pipeline using tools like Jenkins, GitHub Actions, or GitLab CI.
 - Implement automated testing and deployment.
 
 6. Security:
