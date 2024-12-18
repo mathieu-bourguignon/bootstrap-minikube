@@ -44,6 +44,7 @@ As a DevOps engineer, you are expected to improve the stack in the following way
 
 - Integrate Prometheus and Grafana for monitoring.
 - Set up alerting for critical metrics.
+
 ### Helm Deployment:
 
 - Create a Helm chart for deploying the application.
@@ -52,13 +53,14 @@ As a DevOps engineer, you are expected to improve the stack in the following way
 ### Autoscaling:
 
 - Fine-tune the Horizontal Pod Autoscaler based on application load.
+
 ### Logging:
 
 - Integrate centralized logging using tools like ELK stack (Elasticsearch, Logstash, Kibana) or Loki.
 
 ### CI/CD:
 
-- Set up a CI/CD pipeline using tools like Jenkins, GitHub Actions, or GitLab CI.
+- Set up a CI/CD pipeline using tools GitHub Actions.
 - Implement automated testing and deployment.
 
 ### Security:

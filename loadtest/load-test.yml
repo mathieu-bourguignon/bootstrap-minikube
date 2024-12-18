@@ -2,9 +2,9 @@ config:
   target: 'http://localhost'  
   phases:
     - duration: 30
-      arrivalRate: 10
+      arrivalRate: 3
     - duration: 60
-      arrivalRate: 20
+      arrivalRate: 5
     - duration: 60
       arrivalRate: 1
 
