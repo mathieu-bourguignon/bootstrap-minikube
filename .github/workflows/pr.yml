@@ -82,4 +82,4 @@ jobs:
 
       - name: Boostrap minikube
         run: |
-        ./bootstrap.sh
+          ./bootstrap.sh
