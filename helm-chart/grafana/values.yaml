@@ -1,0 +1,63 @@
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: admin
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: standard
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local
+          access: proxy
+          isDefault: true
+        - name: Loki
+          type: loki
+          url: http://loki.logging:3100
+          access: proxy
+          isDefault: false
+
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+
+#  # Service configuration
+#  service:
+#    type: LoadBalancer
+#    port: 80
+#    nodePort: 30300
+
+  # Ingress configuration
+  ingress:
+    enabled: false
+
