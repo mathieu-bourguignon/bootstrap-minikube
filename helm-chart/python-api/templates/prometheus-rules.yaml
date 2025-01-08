@@ -1,0 +1,62 @@
+{{- if .Values.monitoring.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  groups:
+    - name: {{ .Release.Name }}.rules
+      rules:
+        - alert: HighCPUUsage
+          expr: |
+            container_cpu_usage_seconds_total{container="{{ .Release.Name }}"} > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: High CPU usage detected
+            description: Container {{ .Release.Name }} CPU usage above 80% for 5 minutes
+
+        - alert: HighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{container="{{ .Release.Name }}"} > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: High memory usage detected
+            description: Container {{ .Release.Name }} memory usage above 80% for 5 minutes
+
+        - alert: HighErrorRate
+          expr: |
+            rate(http_requests_total{status=~"5.*"}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+          for: 2m
+          labels:
+            severity: critical
+            team: backend
+          annotations:
+            summary: High error rate detected
+            description: Error rate is above 5% for more than 2 minutes.
+
+        - alert: PodRestartingTooOften
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="python-api"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: backend
+
+        - alert: SlowResponseTime
+          expr: |
+            rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: backend
+          annotations:
+            summary: Slow response time detected
+            description: Average response time is above 1 second for more than 5 minutes.
+{{- end }}
+

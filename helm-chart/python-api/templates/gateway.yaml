@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8080
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 80
+      name: http-monitoring
+      protocol: HTTP
+    hosts:
+    - "prometheus.example.com"
+    - "grafana.example.com"
+    - "loki.example.com"
+
