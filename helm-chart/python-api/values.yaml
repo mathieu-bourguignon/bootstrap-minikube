@@ -1,0 +1,60 @@
+# Application Configuration
+application:
+  name: python-api
+  replicas: 1
+  image:
+    repository: test-api
+    tag: latest
+    pullPolicy: Never
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+  ports:
+    - name: http
+      containerPort: 5000
+      protocol: TCP
+
+# Service Configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+# Autoscaling Configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Prometheus ServiceMonitor
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 15s 
+
+# Istio Configuration
+istio:
+  enabled: true
+  gateway:
+    enabled: true
+    hosts:
+      - "*"
+  virtualService:
+    enabled: true
+    hosts:
+      - "*" 
+
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
