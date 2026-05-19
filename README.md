@@ -16,8 +16,9 @@ Argo CD deploys the application manifests from this repository:
 
 - `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
 - `apps/python-api`: Helm chart for the Python API, including canary routing, HPA, probes, resources, and Prometheus scraping annotations.
-- `argocd/applications`: Argo CD `Application` resources for both apps.
-- `monitoring`: Istio routes for Grafana, Kiali, and Argo CD, plus Loki, Promtail, Tempo, Alertmanager, dashboards, and Prometheus alert rules.
+- `apps/platform-routing`: shared Istio Gateway and platform routes for Grafana, Kiali, and Argo CD.
+- `argocd/applications`: Argo CD `Application` resources for the apps and platform routing.
+- `monitoring`: Loki, Promtail, Tempo, Alertmanager, dashboards, and Prometheus alert rules.
 
 The Argo CD applications target the `argocd` branch. Push this branch before running the bootstrap if Argo CD needs to pull the latest manifests from GitHub.
 

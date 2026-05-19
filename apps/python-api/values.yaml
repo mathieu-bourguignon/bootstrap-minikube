@@ -44,7 +44,7 @@ probes:
 
 istio:
   gateway:
-    name: test-api-gateway
+    name: platform-gateway
     host: "*"
   route:
     prefix: /test
