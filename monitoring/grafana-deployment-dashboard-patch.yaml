@@ -1,0 +1,12 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: grafana
+        volumeMounts:
+        - mountPath: /var/lib/grafana/dashboards/python-api
+          name: dashboards-python-api
+      volumes:
+      - configMap:
+          name: python-api-grafana-dashboard
+        name: dashboards-python-api

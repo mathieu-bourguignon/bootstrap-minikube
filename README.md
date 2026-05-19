@@ -78,6 +78,14 @@ kubectl get pods -l app=test-api
 kubectl -n istio-system port-forward svc/prometheus 9090:9090
 ```
 
+Grafana includes a provisioned `Python API Observability` dashboard in the `python-api` folder:
+
+```text
+http://localhost/grafana/d/python-api-observability/python-api-observability
+```
+
+It combines application metrics from `/metrics`, Istio traffic metrics, and pod-level CPU, memory, and scrape health.
+
 
 ## Improvements to the Stack
 As a DevOps engineer, you are expected to improve the stack in the following ways:

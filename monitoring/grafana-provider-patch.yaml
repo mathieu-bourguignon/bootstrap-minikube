@@ -1,0 +1,25 @@
+data:
+  dashboardproviders.yaml: |
+    apiVersion: 1
+    providers:
+    - disableDeletion: false
+      folder: istio
+      name: istio
+      options:
+        path: /var/lib/grafana/dashboards/istio
+      orgId: 1
+      type: file
+    - disableDeletion: false
+      folder: istio
+      name: istio-services
+      options:
+        path: /var/lib/grafana/dashboards/istio-services
+      orgId: 1
+      type: file
+    - disableDeletion: false
+      folder: python-api
+      name: python-api
+      options:
+        path: /var/lib/grafana/dashboards/python-api
+      orgId: 1
+      type: file

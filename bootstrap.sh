@@ -32,6 +32,11 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samp
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/grafana.yaml
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/jaeger.yaml
 kubectl -n istio-system set env deployment/grafana GF_SERVER_ROOT_URL=http://localhost/grafana/ GF_SERVER_SERVE_FROM_SUB_PATH=true
+kubectl apply -f monitoring/grafana-python-api-dashboard.yaml
+kubectl -n istio-system patch configmap grafana --type merge --patch-file monitoring/grafana-provider-patch.yaml
+kubectl -n istio-system patch deployment grafana --type strategic --patch-file monitoring/grafana-deployment-dashboard-patch.yaml
+kubectl -n istio-system rollout restart deployment/grafana
+kubectl -n istio-system rollout status deployment/grafana --timeout=300s
 kubectl apply -f monitoring/grafana.gateway.yaml
 kubectl apply -f monitoring/kiali.gateway.yaml
 

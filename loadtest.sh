@@ -1,5 +1,14 @@
 #!/bin/bash
 
-artillery run loadtest/load-test.yml \
-  --record \
-  --key a9_wChrd4QAXWHCTaLU4y5bY9SPRcAYAraZ
+set -euo pipefail
+
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  . "$HOME/.nvm/nvm.sh"
+  nvm use 22 >/dev/null
+fi
+
+if [ "$#" -gt 0 ]; then
+  npx artillery "$@"
+else
+  npx artillery run loadtest/load-test.yml
+fi
