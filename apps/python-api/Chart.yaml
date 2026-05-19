@@ -1,0 +1,6 @@
+apiVersion: v2
+name: python-api
+description: CPU load test API deployed with Istio canary routing.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

@@ -9,6 +9,8 @@ spec:
     repoURL: https://github.com/mathieu-bourguignon/bootstrap-minikube.git
     targetRevision: argocd
     path: apps/python-api
+    helm:
+      releaseName: python-api
   destination:
     server: https://kubernetes.default.svc
     namespace: default

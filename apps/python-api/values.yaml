@@ -1,0 +1,55 @@
+image:
+  repository: test-api
+  tag: latest
+  pullPolicy: Never
+
+service:
+  name: test-api-service
+  port: 80
+  targetPort: 5000
+
+versions:
+  - name: v1
+    weight: 90
+    replicas: 1
+    message: stable
+  - name: v2
+    weight: 10
+    replicas: 1
+    message: canary
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  averageUtilization: 50
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 15
+  readiness:
+    path: /ready
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+istio:
+  gateway:
+    name: test-api-gateway
+    host: "*"
+  route:
+    prefix: /test
+    rewrite: /
+
+metrics:
+  enabled: true
+  path: /metrics

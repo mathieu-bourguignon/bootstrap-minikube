@@ -1,0 +1,26 @@
+{{- if .Values.hpa.enabled }}
+{{- range .Values.versions }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-api-{{ .name }}-hpa
+  labels:
+    app: test-api
+    version: {{ .name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: test-api-{{ .name }}
+  minReplicas: {{ $.Values.hpa.minReplicas }}
+  maxReplicas: {{ $.Values.hpa.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ $.Values.hpa.averageUtilization }}
+---
+{{- end }}
+{{- end }}

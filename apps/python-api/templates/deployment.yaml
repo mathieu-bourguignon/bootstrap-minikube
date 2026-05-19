@@ -1,0 +1,54 @@
+{{- range .Values.versions }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-api-{{ .name }}
+  labels:
+    app: test-api
+    version: {{ .name }}
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: test-api
+      version: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: test-api
+        version: {{ .name }}
+      {{- if $.Values.metrics.enabled }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ $.Values.metrics.path | quote }}
+        prometheus.io/port: {{ $.Values.service.targetPort | quote }}
+      {{- end }}
+    spec:
+      containers:
+      - name: test-api
+        image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        env:
+        - name: APP_VERSION
+          value: {{ .name | quote }}
+        - name: APP_MESSAGE
+          value: {{ .message | quote }}
+        ports:
+        - name: http
+          containerPort: {{ $.Values.service.targetPort }}
+        livenessProbe:
+          httpGet:
+            path: {{ $.Values.probes.liveness.path }}
+            port: http
+          initialDelaySeconds: {{ $.Values.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.probes.liveness.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ $.Values.probes.readiness.path }}
+            port: http
+          initialDelaySeconds: {{ $.Values.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.probes.readiness.periodSeconds }}
+        resources:
+{{ toYaml $.Values.resources | indent 10 }}
+---
+{{- end }}

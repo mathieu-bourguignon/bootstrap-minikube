@@ -15,7 +15,7 @@ This project is designed to test the capabilities of a DevOps engineer. The goal
 Argo CD deploys the application manifests from this repository:
 
 - `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
-- `apps/python-api`: Python API deployment, service, HPA, Gateway, and VirtualService.
+- `apps/python-api`: Helm chart for the Python API, including canary routing, HPA, probes, resources, and Prometheus scraping annotations.
 - `argocd/applications`: Argo CD `Application` resources for both apps.
 - `monitoring`: Istio routes for Grafana, Kiali, and Argo CD.
 
@@ -43,6 +43,20 @@ http://localhost/kiali
 http://localhost/argocd
 ```
 
+The Python API exposes operational endpoints through the `/test` prefix:
+
+```bash
+curl http://localhost/test/health
+curl http://localhost/test/ready
+curl http://localhost/test/metrics
+```
+
+The `/test` route is split 90/10 between `v1` and `v2` by Istio. Repeated calls show which version handled the request:
+
+```bash
+for i in {1..20}; do curl -s http://localhost/test; echo; done
+```
+
 Get the initial Argo CD admin password with:
 
 ```bash
@@ -54,6 +68,14 @@ Run the loadtest.sh script to perform a load test on the API using Artillery.
 
 ```
 ./loadtest.sh
+```
+
+Watch autoscaling and canary traffic with:
+
+```bash
+kubectl get hpa
+kubectl get pods -l app=test-api
+kubectl -n istio-system port-forward svc/prometheus 9090:9090
 ```
 
 
