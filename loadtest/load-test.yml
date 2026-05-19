@@ -1,16 +1,14 @@
 config:
   target: 'http://localhost'  
   phases:
-    - duration: 30
+    - duration: 300
       arrivalRate: 10
-    - duration: 60
+    - duration: 600
+      arrivalRate: 50
+    - duration: 600
       arrivalRate: 20
-    - duration: 60
-      arrivalRate: 1
 
 scenarios:
   - flow:
       - get:
-          url: "/test"
-      - get:
-          url: "/hello"          
+          url: "/test"      

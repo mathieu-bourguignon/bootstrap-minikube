@@ -1,0 +1,38 @@
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - access: proxy
+      editable: true
+      isDefault: true
+      jsonData:
+        timeInterval: 15s
+      name: Prometheus
+      orgId: 1
+      type: prometheus
+      uid: prometheus
+      url: http://prometheus:9090
+    - access: proxy
+      editable: true
+      isDefault: false
+      jsonData:
+        maxLines: 1000
+        timeInterval: 5s
+      name: Loki
+      orgId: 1
+      type: loki
+      uid: loki
+      url: http://loki:3100
+    - access: proxy
+      editable: true
+      isDefault: false
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: loki
+          filterBySpanID: false
+          filterByTraceID: true
+      name: Tempo
+      orgId: 1
+      type: tempo
+      uid: tempo
+      url: http://tempo:3200

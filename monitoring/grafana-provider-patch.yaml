@@ -23,3 +23,10 @@ data:
         path: /var/lib/grafana/dashboards/python-api
       orgId: 1
       type: file
+    - disableDeletion: false
+      folder: observability
+      name: observability
+      options:
+        path: /var/lib/grafana/dashboards/observability
+      orgId: 1
+      type: file

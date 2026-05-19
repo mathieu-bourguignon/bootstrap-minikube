@@ -1,0 +1,50 @@
+data:
+  alerting_rules.yml: |
+    groups:
+    - name: python-api.rules
+      rules:
+      - alert: PythonApiTargetDown
+        expr: up{namespace="default", pod=~"test-api-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: python-api
+        annotations:
+          summary: Python API scrape target is down
+          description: Prometheus cannot scrape {{ $labels.pod }}.
+      - alert: PythonApiHighErrorRate
+        expr: sum(rate(istio_requests_total{destination_workload=~"test-api.*", response_code=~"5.."}[5m])) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: python-api
+        annotations:
+          summary: Python API is returning 5xx responses
+          description: Istio reports 5xx responses for the Python API.
+      - alert: PythonApiHighP95Latency
+        expr: histogram_quantile(0.95, sum by (le) (rate(python_api_request_duration_seconds_bucket{endpoint="/"}[5m]))) > 1.5
+        for: 5m
+        labels:
+          severity: warning
+          service: python-api
+        annotations:
+          summary: Python API p95 latency is high
+          description: Application p95 latency is above 1.5 seconds.
+      - alert: PythonApiHighCpu
+        expr: sum(rate(container_cpu_usage_seconds_total{namespace="default", pod=~"test-api-.*", cpu="total"}[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: python-api
+        annotations:
+          summary: Python API CPU usage is high
+          description: Python API pods are using more than 0.8 CPU cores.
+      - alert: PythonApiHighMemory
+        expr: sum(container_memory_working_set_bytes{namespace="default", pod=~"test-api-.*"}) > 350 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          service: python-api
+        annotations:
+          summary: Python API memory usage is high
+          description: Python API pods are using more than 350 MiB memory.

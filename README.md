@@ -17,7 +17,7 @@ Argo CD deploys the application manifests from this repository:
 - `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
 - `apps/python-api`: Helm chart for the Python API, including canary routing, HPA, probes, resources, and Prometheus scraping annotations.
 - `argocd/applications`: Argo CD `Application` resources for both apps.
-- `monitoring`: Istio routes for Grafana, Kiali, and Argo CD.
+- `monitoring`: Istio routes for Grafana, Kiali, and Argo CD, plus Loki, Promtail, Tempo, Alertmanager, dashboards, and Prometheus alert rules.
 
 The Argo CD applications target the `argocd` branch. Push this branch before running the bootstrap if Argo CD needs to pull the latest manifests from GitHub.
 
@@ -85,6 +85,31 @@ http://localhost/grafana/d/python-api-observability/python-api-observability
 ```
 
 It combines application metrics from `/metrics`, Istio traffic metrics, and pod-level CPU, memory, and scrape health.
+
+Grafana also includes an `Observability Overview` dashboard in the `observability` folder:
+
+```text
+http://localhost/grafana/d/observability-overview/observability-overview
+```
+
+This dashboard uses:
+
+- Prometheus for application, mesh, infrastructure, and alert metrics.
+- Loki and Promtail for Kubernetes pod logs.
+- Tempo as the trace backend for Istio traces.
+- Alertmanager plus Prometheus alert rules for Python API health, errors, latency, CPU, and memory.
+
+Useful checks:
+
+```bash
+kubectl -n istio-system get pods -l app=loki
+kubectl -n istio-system get pods -l app=tempo
+kubectl -n istio-system get pods -l app=alertmanager
+kubectl -n istio-system get daemonset promtail
+kubectl -n istio-system port-forward svc/prometheus 9090:9090
+```
+
+In Grafana Explore, use the `Loki` datasource for logs and the `Tempo` datasource for traces.
 
 
 ## Improvements to the Stack

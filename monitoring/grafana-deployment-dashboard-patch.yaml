@@ -6,7 +6,12 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/grafana/dashboards/python-api
           name: dashboards-python-api
+        - mountPath: /var/lib/grafana/dashboards/observability
+          name: dashboards-observability
       volumes:
       - configMap:
           name: python-api-grafana-dashboard
         name: dashboards-python-api
+      - configMap:
+          name: observability-grafana-dashboard
+        name: dashboards-observability

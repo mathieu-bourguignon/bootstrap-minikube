@@ -20,8 +20,14 @@ cd istio-$ISTIO_VERSION
 export PATH=$PWD/bin:$PATH
 cd ..
 
-# Install Istio 
-istioctl install --set profile=demo -y
+# Install Istio
+istioctl install \
+  --set profile=demo \
+  --set meshConfig.enableTracing=true \
+  --set meshConfig.extensionProviders[0].name=tempo \
+  --set meshConfig.extensionProviders[0].zipkin.service=tempo.istio-system.svc.cluster.local \
+  --set meshConfig.extensionProviders[0].zipkin.port=9411 \
+  -y
 
 # Label the default namespace to enable Istio sidecar injection
 kubectl label namespace default istio-injection=enabled
@@ -30,11 +36,22 @@ kubectl label namespace default istio-injection=enabled
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/kiali.yaml
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/prometheus.yaml
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/grafana.yaml
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/jaeger.yaml
+kubectl apply -f monitoring/alertmanager.yaml
+kubectl apply -f monitoring/loki.yaml
+kubectl apply -f monitoring/tempo.yaml
+kubectl -n istio-system rollout status deployment/alertmanager --timeout=300s
+kubectl -n istio-system rollout status deployment/loki --timeout=300s
+kubectl -n istio-system rollout status daemonset/promtail --timeout=300s
+kubectl -n istio-system rollout status deployment/tempo --timeout=300s
+kubectl -n istio-system patch configmap prometheus --type merge --patch-file monitoring/prometheus-alert-rules-patch.yaml
 kubectl -n istio-system set env deployment/grafana GF_SERVER_ROOT_URL=http://localhost/grafana/ GF_SERVER_SERVE_FROM_SUB_PATH=true
 kubectl apply -f monitoring/grafana-python-api-dashboard.yaml
+kubectl apply -f monitoring/grafana-observability-dashboard.yaml
 kubectl -n istio-system patch configmap grafana --type merge --patch-file monitoring/grafana-provider-patch.yaml
+kubectl -n istio-system patch configmap grafana --type merge --patch-file monitoring/grafana-datasources-patch.yaml
 kubectl -n istio-system patch deployment grafana --type strategic --patch-file monitoring/grafana-deployment-dashboard-patch.yaml
+kubectl -n istio-system rollout restart deployment/prometheus
+kubectl -n istio-system rollout status deployment/prometheus --timeout=300s
 kubectl -n istio-system rollout restart deployment/grafana
 kubectl -n istio-system rollout status deployment/grafana --timeout=300s
 kubectl apply -f monitoring/grafana.gateway.yaml
@@ -69,6 +86,7 @@ export GATEWAY_URL=$INGRESS_HOST
 
 echo "Access your hello-minikube service at http://localhost/hello"
 echo "Access the Grafana dashboard at http://localhost/grafana"
+echo "Access the observability dashboard at http://localhost/grafana/d/observability-overview/observability-overview"
 echo "Access the Kiali dashboard at http://localhost/kiali"
 echo "Access the Argo CD UI at http://localhost/argocd"
 echo "Access the minikube dashboard using 'minikube dashboard'"
