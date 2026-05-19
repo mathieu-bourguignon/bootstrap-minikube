@@ -14,9 +14,9 @@ This project is designed to test the capabilities of a DevOps engineer. The goal
 
 Argo CD deploys the application manifests from this repository:
 
-- `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
-- `apps/python-api`: Helm chart for the Python API, including canary routing, HPA, probes, resources, and Prometheus scraping annotations.
-- `apps/platform-routing`: shared Istio Gateway and platform routes for Grafana, Kiali, and Argo CD.
+- `apps/hello-minikube`: echo server deployment and service.
+- `apps/python-api`: Helm chart for the Python API, including canary subsets, HPA, probes, resources, and Prometheus scraping annotations.
+- `apps/platform-routing`: shared Istio Gateway and single VirtualService for `/hello`, `/test`, `/grafana`, `/kiali`, and `/argocd`.
 - `argocd/applications`: Argo CD `Application` resources for the apps and platform routing.
 - `monitoring`: Loki, Promtail, Tempo, Alertmanager, dashboards, and Prometheus alert rules.
 

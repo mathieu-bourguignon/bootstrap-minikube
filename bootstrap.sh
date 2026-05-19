@@ -54,6 +54,7 @@ kubectl -n istio-system rollout restart deployment/prometheus
 kubectl -n istio-system rollout status deployment/prometheus --timeout=300s
 kubectl -n istio-system rollout restart deployment/grafana
 kubectl -n istio-system rollout status deployment/grafana --timeout=300s
+kubectl apply -f apps/platform-routing/gateway.yaml
 
 # Install Argo CD
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
@@ -63,7 +64,6 @@ kubectl wait --for=condition=available --timeout=300s deployment/argocd-repo-ser
 kubectl -n argocd patch deployment argocd-server --type json -p '[{"op":"replace","path":"/spec/template/spec/containers/0/args","value":["/usr/local/bin/argocd-server","--insecure","--rootpath=/argocd","--basehref=/argocd/"]}]'
 kubectl -n argocd patch configmap argocd-cm --type merge -p '{"data":{"url":"http://localhost/argocd"}}'
 kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
-kubectl apply -f apps/platform-routing/gateway.yaml
 
 cd python-api
 
@@ -74,6 +74,7 @@ cd ..
 
 kubectl apply -f argocd/applications/
 kubectl delete gateway grafana-gateway kiali-gateway argocd-gateway hello-minikube-gateway test-api-gateway --ignore-not-found
+kubectl delete virtualservice grafana kiali argocd hello-minikube test-api --ignore-not-found
 
 # Install artillery
 nvm use 22

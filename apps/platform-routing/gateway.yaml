@@ -16,45 +16,7 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: grafana
-spec:
-  hosts:
-  - "*"
-  gateways:
-  - platform-gateway
-  http:
-  - match:
-    - uri:
-        prefix: /grafana
-    route:
-    - destination:
-        host: grafana.istio-system.svc.cluster.local
-        port:
-          number: 3000
----
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: kiali
-spec:
-  hosts:
-  - "*"
-  gateways:
-  - platform-gateway
-  http:
-  - match:
-    - uri:
-        prefix: /kiali
-    route:
-    - destination:
-        host: kiali.istio-system.svc.cluster.local
-        port:
-          number: 20001
----
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: argocd
+  name: platform-routes
 spec:
   hosts:
   - "*"
@@ -69,3 +31,47 @@ spec:
         host: argocd-server.argocd.svc.cluster.local
         port:
           number: 80
+  - match:
+    - uri:
+        prefix: /grafana
+    route:
+    - destination:
+        host: grafana.istio-system.svc.cluster.local
+        port:
+          number: 3000
+  - match:
+    - uri:
+        prefix: /kiali
+    route:
+    - destination:
+        host: kiali.istio-system.svc.cluster.local
+        port:
+          number: 20001
+  - match:
+    - uri:
+        prefix: /test
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: test-api-service
+        subset: v1
+        port:
+          number: 80
+      weight: 90
+    - destination:
+        host: test-api-service
+        subset: v2
+        port:
+          number: 80
+      weight: 10
+  - match:
+    - uri:
+        prefix: /hello
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: hello-minikube
+        port:
+          number: 8080
