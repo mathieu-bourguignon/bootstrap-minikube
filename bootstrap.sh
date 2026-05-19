@@ -36,6 +36,7 @@ kubectl label namespace default istio-injection=enabled
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/kiali.yaml
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/prometheus.yaml
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/addons/grafana.yaml
+kubectl -n istio-system patch configmap kiali --type merge --patch-file monitoring/kiali-grafana-patch.yaml
 kubectl apply -f monitoring/alertmanager.yaml
 kubectl apply -f monitoring/loki.yaml
 kubectl apply -f monitoring/tempo.yaml
