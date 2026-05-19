@@ -17,7 +17,7 @@ Argo CD deploys the application manifests from this repository:
 - `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
 - `apps/python-api`: Python API deployment, service, HPA, Gateway, and VirtualService.
 - `argocd/applications`: Argo CD `Application` resources for both apps.
-- `monitoring`: Istio routes for Grafana and Kiali.
+- `monitoring`: Istio routes for Grafana, Kiali, and Argo CD.
 
 The Argo CD applications target the `argocd` branch. Push this branch before running the bootstrap if Argo CD needs to pull the latest manifests from GitHub.
 
@@ -40,12 +40,13 @@ http://localhost/test
 http://localhost/hello
 http://localhost/grafana
 http://localhost/kiali
+http://localhost/argocd
 ```
 
-Access Argo CD with:
+Get the initial Argo CD admin password with:
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
 ### Step 3: Load Testing with Artillery

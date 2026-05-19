@@ -35,11 +35,14 @@ kubectl apply -f monitoring/grafana.gateway.yaml
 kubectl apply -f monitoring/kiali.gateway.yaml
 
 # Install Argo CD
-kubectl create namespace argocd
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --for condition=established --timeout=60s crd/applications.argoproj.io
 kubectl wait --for=condition=available --timeout=300s deployment/argocd-repo-server -n argocd
+kubectl -n argocd patch deployment argocd-server --type json -p '[{"op":"replace","path":"/spec/template/spec/containers/0/args","value":["/usr/local/bin/argocd-server","--insecure","--rootpath=/argocd","--basehref=/argocd/"]}]'
+kubectl -n argocd patch configmap argocd-cm --type merge -p '{"data":{"url":"http://localhost/argocd"}}'
 kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+kubectl apply -f monitoring/argocd.gateway.yaml
 
 cd python-api
 
@@ -60,7 +63,7 @@ export GATEWAY_URL=$INGRESS_HOST
 echo "Access your hello-minikube service at http://localhost/hello"
 echo "Access the Grafana dashboard at http://localhost/grafana"
 echo "Access the Kiali dashboard at http://localhost/kiali"
-echo "Access the Argo CD UI using 'kubectl port-forward svc/argocd-server -n argocd 8080:443'"
+echo "Access the Argo CD UI at http://localhost/argocd"
 echo "Access the minikube dashboard using 'minikube dashboard'"
 
 
