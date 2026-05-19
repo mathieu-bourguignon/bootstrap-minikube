@@ -58,6 +58,7 @@ kubectl apply -f apps/platform-routing/gateway.yaml
 
 # Install Argo CD
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+kubectl label namespace argocd istio-injection=enabled --overwrite
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --for condition=established --timeout=60s crd/applications.argoproj.io
 kubectl wait --for=condition=available --timeout=300s deployment/argocd-repo-server -n argocd
