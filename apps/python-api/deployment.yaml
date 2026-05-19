@@ -27,9 +27,9 @@ spec:
   selector:
     app: test-api
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5000
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
   type: ClusterIP
 ---
 apiVersion: autoscaling/v2
@@ -44,9 +44,9 @@ spec:
   minReplicas: 1
   maxReplicas: 5
   metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 50  # Cible de CPU à 50%
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

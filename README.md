@@ -1,6 +1,6 @@
 ## Introduction
 
-This project is designed to test the capabilities of a DevOps engineer. The goal is to deploy a simple API that performs random CPU-intensive tasks and improve the stack with monitoring, better deployment strategies using Helm, and implementing autoscaling among other enhancements.
+This project is designed to test the capabilities of a DevOps engineer. The goal is to deploy a simple API that performs random CPU-intensive tasks and improve the stack with monitoring, GitOps deployment with Argo CD, better deployment strategies using Helm, and implementing autoscaling among other enhancements.
 
 ## Prerequisites
 
@@ -10,11 +10,22 @@ This project is designed to test the capabilities of a DevOps engineer. The goal
 - [Istio](https://istio.io/latest/docs/setup/getting-started/#download)
 - [Node.js](https://nodejs.org/) (for Artillery)
 
+## GitOps Layout
+
+Argo CD deploys the application manifests from this repository:
+
+- `apps/hello-minikube`: echo server deployment, service, Gateway, and VirtualService.
+- `apps/python-api`: Python API deployment, service, HPA, Gateway, and VirtualService.
+- `argocd/applications`: Argo CD `Application` resources for both apps.
+- `monitoring`: Istio routes for Grafana and Kiali.
+
+The Argo CD applications target the `argocd` branch. Push this branch before running the bootstrap if Argo CD needs to pull the latest manifests from GitHub.
+
 ## Getting Started
 
 ### Step 1: Bootstrap the Stack
 
-All the initialization steps are automated in the `bootstrap.sh` script. Run the script to start Minikube, install Istio, and deploy the test API.
+All the initialization steps are automated in the `bootstrap.sh` script. Run the script to start Minikube, install Istio, install Argo CD, build the local API image, and register the Argo CD applications.
 
 ```bash
 ./bootstrap.sh
@@ -27,6 +38,14 @@ You can now access the API at:
 
 http://localhost/test
 http://localhost/hello
+http://localhost/grafana
+http://localhost/kiali
+```
+
+Access Argo CD with:
+
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 ### Step 3: Load Testing with Artillery
@@ -78,8 +97,10 @@ This script initializes the entire stack, including:
 - Starting Minikube
 - Enabling necessary Minikube addons
 - Installing Istio
-- Deploying the test API
-- Setting up Istio Gateways and VirtualServices
+- Installing Argo CD
+- Building the local test API image
+- Registering the Argo CD applications for `hello-minikube` and `python-api`
+- Setting up Istio Gateways and VirtualServices for monitoring
 
 
 

@@ -1,10 +1,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: test-api-gateway
+  name: grafana-gateway
 spec:
   selector:
-    istio: ingressgateway # Utiliser le contrôleur Istio par défaut
+    istio: ingressgateway
   servers:
   - port:
       number: 80
@@ -16,20 +16,18 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: test-api
+  name: grafana
 spec:
   hosts:
   - "*"
   gateways:
-  - test-api-gateway
+  - grafana-gateway
   http:
   - match:
     - uri:
-        prefix: /test
-    rewrite:
-      uri: /
+        prefix: /grafana
     route:
     - destination:
-        host: test-api-service
+        host: grafana.istio-system.svc.cluster.local
         port:
-          number: 80
+          number: 3000
