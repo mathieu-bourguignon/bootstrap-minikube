@@ -33,6 +33,19 @@ spec:
           value: {{ .name | quote }}
         - name: APP_MESSAGE
           value: {{ .message | quote }}
+        {{- if $.Values.postgres.enabled }}
+        - name: POSTGRES_DSN
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.postgres.secretName }}
+              key: POSTGRES_DSN
+        - name: POSTGRES_SEED_ROWS
+          value: {{ $.Values.postgres.seedRows | quote }}
+        {{- end }}
+        {{- if $.Values.redis.enabled }}
+        - name: REDIS_URL
+          value: "redis://{{ $.Values.redis.service.name }}:{{ $.Values.redis.service.port }}/0"
+        {{- end }}
         ports:
         - name: http
           containerPort: {{ $.Values.service.targetPort }}

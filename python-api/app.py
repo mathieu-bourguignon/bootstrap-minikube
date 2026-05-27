@@ -1,10 +1,40 @@
 import random
 import os
 import time
+import uuid
 from flask import Flask, Response, request
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import psycopg
+from psycopg.types.json import Jsonb
+import redis
 
 app = Flask(__name__)
+
+POSTGRES_DSN = os.getenv("POSTGRES_DSN")
+REDIS_URL = os.getenv("REDIS_URL")
+SEED_ROWS = int(os.getenv("POSTGRES_SEED_ROWS", "50"))
+SCHEMA_READY = False
+
+SAMPLE_ADJECTIVES = [
+    "calm",
+    "fast",
+    "curious",
+    "steady",
+    "bright",
+    "warm",
+    "sharp",
+    "bold",
+]
+SAMPLE_TOPICS = [
+    "deploy",
+    "canary",
+    "metric",
+    "trace",
+    "cache",
+    "query",
+    "pod",
+    "route",
+]
 
 REQUEST_COUNT = Counter(
     "python_api_requests_total",
@@ -16,6 +46,79 @@ REQUEST_LATENCY = Histogram(
     "HTTP request latency for the Python API.",
     ["endpoint", "app_version"],
 )
+
+
+def get_db_connection():
+    if not POSTGRES_DSN:
+        raise RuntimeError("POSTGRES_DSN is not configured")
+    return psycopg.connect(POSTGRES_DSN)
+
+
+def get_redis_client():
+    if not REDIS_URL:
+        raise RuntimeError("REDIS_URL is not configured")
+    return redis.Redis.from_url(REDIS_URL, decode_responses=True)
+
+
+def random_sample():
+    return {
+        "external_id": str(uuid.uuid4()),
+        "label": f"{random.choice(SAMPLE_ADJECTIVES)}-{random.choice(SAMPLE_TOPICS)}",
+        "score": round(random.uniform(1, 100), 2),
+        "payload": {
+            "region": random.choice(["local", "edge", "core"]),
+            "priority": random.choice(["low", "medium", "high"]),
+            "latency_ms": random.randint(15, 750),
+        },
+    }
+
+
+def ensure_schema_and_seed():
+    global SCHEMA_READY
+    if SCHEMA_READY:
+        return
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS api_samples (
+                    id BIGSERIAL PRIMARY KEY,
+                    external_id UUID NOT NULL,
+                    label TEXT NOT NULL,
+                    score NUMERIC(8, 2) NOT NULL,
+                    payload JSONB NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+                """
+            )
+            cur.execute("SELECT count(*) FROM api_samples")
+            current_rows = cur.fetchone()[0]
+            rows_to_insert = max(SEED_ROWS - current_rows, 0)
+            for _ in range(rows_to_insert):
+                sample = random_sample()
+                cur.execute(
+                    """
+                    INSERT INTO api_samples (external_id, label, score, payload)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (
+                        sample["external_id"],
+                        sample["label"],
+                        sample["score"],
+                        Jsonb(sample["payload"]),
+                    ),
+                )
+        conn.commit()
+
+    SCHEMA_READY = True
+
+
+@app.before_request
+def prepare_dependencies():
+    if request_endpoint() != "/data":
+        return
+    ensure_schema_and_seed()
 
 
 @app.after_request
@@ -65,7 +168,59 @@ def health():
 
 @app.route('/ready', methods=['GET'])
 def ready():
-    return {"status": "ready"}
+    checks = {}
+    status = 200
+
+    try:
+        ensure_schema_and_seed()
+        checks["postgres"] = "ready"
+    except Exception as exc:
+        checks["postgres"] = f"not ready: {exc}"
+        status = 503
+
+    try:
+        get_redis_client().ping()
+        checks["redis"] = "ready"
+    except Exception as exc:
+        checks["redis"] = f"not ready: {exc}"
+        status = 503
+
+    return {"status": "ready" if status == 200 else "not ready", "checks": checks}, status
+
+
+@app.route('/data', methods=['GET'])
+def data():
+    app_version = os.getenv("APP_VERSION", "local")
+
+    with REQUEST_LATENCY.labels(endpoint="/data", app_version=app_version).time():
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, external_id, label, score, payload, created_at
+                    FROM api_samples
+                    ORDER BY random()
+                    LIMIT 1
+                    """
+                )
+                row = cur.fetchone()
+
+        cache_hits = get_redis_client().incr("python-api:data:hits")
+
+    return {
+        "cache": {
+            "redis_key": "python-api:data:hits",
+            "hits": cache_hits,
+        },
+        "sample": {
+            "id": row[0],
+            "external_id": str(row[1]),
+            "label": row[2],
+            "score": float(row[3]),
+            "payload": row[4],
+            "created_at": row[5].isoformat(),
+        },
+    }
 
 
 @app.route('/metrics', methods=['GET'])

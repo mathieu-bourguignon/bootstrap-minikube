@@ -50,7 +50,13 @@ The Python API exposes operational endpoints through the `/test` prefix:
 curl http://localhost/test/health
 curl http://localhost/test/ready
 curl http://localhost/test/metrics
+curl http://localhost/test/data
 ```
+
+The `/test/data` route initializes a small Postgres schema, fills it with random
+POC data when needed, returns one random row, and increments a Redis counter.
+Postgres and Redis are deployed by the same `apps/python-api` Helm chart and
+synced by the existing `python-api` Argo CD application.
 
 The `/test` route is split 90/10 between `v1` and `v2` by Istio. Repeated calls show which version handled the request:
 
@@ -69,6 +75,28 @@ Run the loadtest.sh script to perform a load test on the API using Artillery.
 
 ```
 ./loadtest.sh
+```
+
+### Apply API Changes Without Reinstalling the Cluster
+
+When Minikube, Istio, and Argo CD are already installed, apply only the Python
+API stack changes with:
+
+```bash
+./apply-python-api-stack.sh
+```
+
+The script rebuilds the local `test-api:latest` image inside Minikube, applies
+the `apps/python-api` Helm chart locally, restarts the API deployments, and waits
+for Postgres, Redis, and the API pods to become ready.
+
+Because Argo CD reads from the remote `argocd` branch, push that branch when you
+want GitOps reconciliation to keep exactly the same state over time. By default,
+the script pauses auto-sync for the `python-api` Argo CD application so Argo CD
+does not immediately revert your local manifests. Re-enable it after pushing:
+
+```bash
+kubectl apply -f argocd/applications/python-api.application.yaml
 ```
 
 Watch autoscaling and canary traffic with:
