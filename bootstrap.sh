@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -euo pipefail
 
 MINIKUBE_PROFILE="${MINIKUBE_PROFILE:-minikube}"
 KUBECTL_CONTEXT="${KUBECTL_CONTEXT:-${MINIKUBE_PROFILE}}"
