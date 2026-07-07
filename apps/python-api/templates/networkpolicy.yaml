@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-api-netpol
+  labels:
+    app: test-api
+spec:
+  podSelector:
+    matchLabels:
+      app: test-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Autorise le trafic entrant uniquement depuis Istio Ingress Gateway
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: istio-system
+    ports:
+    - protocol: TCP
+      port: {{ .Values.service.targetPort }}
+  egress:
+  # Autorise le trafic sortant vers Postgres
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Autorise le trafic sortant vers Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Autorise la DNS resoltion
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53

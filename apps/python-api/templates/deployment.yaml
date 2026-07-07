@@ -24,6 +24,8 @@ spec:
         prometheus.io/port: {{ $.Values.service.targetPort | quote }}
       {{- end }}
     spec:
+      imagePullSecrets:
+      - name: ghcr-credentials
       containers:
       - name: test-api
         image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
@@ -34,6 +36,8 @@ spec:
         - name: APP_MESSAGE
           value: {{ .message | quote }}
         {{- if $.Values.postgres.enabled }}
+        - name: MAX_DELAY_SECONDS
+          value: "0.2"  # Réduit de 2.0 à 0.2 secondes
         - name: POSTGRES_DSN
           valueFrom:
             secretKeyRef:
@@ -61,6 +65,14 @@ spec:
             port: http
           initialDelaySeconds: {{ $.Values.probes.readiness.initialDelaySeconds }}
           periodSeconds: {{ $.Values.probes.readiness.periodSeconds }}
+        {{- if $.Values.probes.startup.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ $.Values.probes.startup.path }}
+            port: http
+          periodSeconds: {{ $.Values.probes.startup.periodSeconds }}
+          failureThreshold: {{ $.Values.probes.startup.failureThreshold }}
+        {{- end }}
         resources:
 {{ toYaml $.Values.resources | indent 10 }}
 ---

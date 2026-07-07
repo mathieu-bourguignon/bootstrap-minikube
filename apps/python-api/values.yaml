@@ -1,7 +1,7 @@
 image:
-  repository: test-api
+  repository: ghcr.io/amelgannoun/bootstrap-minikube/python-api
   tag: latest
-  pullPolicy: Never
+  pullPolicy: Always
 
 service:
   name: test-api-service
@@ -29,19 +29,33 @@ resources:
 hpa:
   enabled: true
   minReplicas: 1
-  maxReplicas: 5
-  averageUtilization: 50
+  maxReplicas: 3
+  averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60  # Évite le yo-yo
+    scaleUp:
+      stabilizationWindowSeconds: 30
 
 probes:
   liveness:
     path: /health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 30 
     periodSeconds: 15
+    timeoutSeconds: 5        
+    failureThreshold: 3
   readiness:
     path: /ready
-    initialDelaySeconds: 5
+    initialDelaySeconds: 20
     periodSeconds: 10
-
+    timeoutSeconds: 3       
+    failureThreshold: 3
+  startup:
+    enabled: true
+    path: /health
+    periodSeconds: 10
+    failureThreshold: 30
+    
 istio:
   gateway:
     name: platform-gateway
@@ -64,7 +78,7 @@ postgres:
   database: poc_api
   username: poc_api
   password: poc_api_password
-  seedRows: 50
+  seedRows: 10
   service:
     name: postgres
     port: 5432

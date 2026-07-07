@@ -145,6 +145,10 @@ def generate_load():
     app_version = os.getenv("APP_VERSION", "local")
     app_message = os.getenv("APP_MESSAGE", "dev")
 
+    max_delay = float(os.getenv("MAX_DELAY_SECONDS", "0.2"))
+    delay = random.uniform(0.02, max_delay)
+    end_time = time.time() + delay
+
     # Générer un délai aléatoire entre 20ms et 2s
     delay = random.uniform(0.02, 2.0)  # En secondes
     end_time = time.time() + delay
@@ -158,6 +162,7 @@ def generate_load():
         "delay": round(delay, 2),
         "message": app_message,
         "version": app_version,
+        "max_delay_configured": max_delay,
     }
 
 
